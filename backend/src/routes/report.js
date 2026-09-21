@@ -49,8 +49,16 @@ router.post('/', async (req, res) => {
   const prompt = buildPrompt(stats, findings);
 
   try {
-    const reportText = await generateInvestigationReport(prompt);
-    const labeled = `DRAFT — AI-GENERATED, REQUIRES PROFESSIONAL REVIEW\n\n${reportText}`;
+    const result = await generateInvestigationReport(prompt);
+
+    if (result.truncated) {
+      console.error('Report generation truncated: Anthropic response hit the max_tokens limit.');
+      return res.status(502).json({
+        error: 'The generated report was cut off before it finished and has been discarded. Please try again.',
+      });
+    }
+
+    const labeled = `**DRAFT — AI-GENERATED, REQUIRES PROFESSIONAL REVIEW**\n\n${result.text}`;
     res.json({ report: labeled, generatedAt: new Date().toISOString() });
   } catch (err) {
     console.error('Report generation failed:', err.message);

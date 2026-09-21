@@ -1,11 +1,19 @@
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = 'claude-sonnet-5';
-const MAX_TOKENS = 1200;
+// A 400-600 word report is ~800-1000 tokens of output; 2048 gives
+// comfortable headroom (including markdown formatting overhead) so a
+// normal report never gets cut off mid-sentence.
+const MAX_TOKENS = 2048;
 
 /**
  * The only function in this codebase allowed to talk to Anthropic.
  * The API key never leaves the server — it is read from process.env
  * (populated from backend/.env) and never included in any response.
+ *
+ * Returns { text, truncated }. `truncated` is true when Anthropic's
+ * `stop_reason` is "max_tokens" — i.e. the model was still writing when
+ * it hit the output limit — so callers can refuse to show a report that
+ * ends mid-sentence rather than silently returning a partial one.
  */
 export async function generateInvestigationReport(prompt) {
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -38,5 +46,5 @@ export async function generateInvestigationReport(prompt) {
     throw err;
   }
 
-  return data.content[0].text;
+  return { text: data.content[0].text, truncated: data.stop_reason === 'max_tokens' };
 }

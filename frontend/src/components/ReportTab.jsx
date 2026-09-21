@@ -1,3 +1,4 @@
+import ReactMarkdown from 'react-markdown';
 import DisclaimerBanner from './DisclaimerBanner.jsx';
 
 export default function ReportTab({ hasData, isGenerating, output, error, onGenerate }) {
@@ -29,7 +30,12 @@ export default function ReportTab({ hasData, isGenerating, output, error, onGene
         <span>Generating investigation narrative...</span>
       </div>
 
-      <div className={`report-output${output ? ' visible' : ''}`}>{output}</div>
+      <div className={`report-output${output ? ' visible' : ''}`}>
+        {/* react-markdown does not execute raw HTML from the source text
+            unless the rehype-raw plugin is added — it isn't here, so any
+            HTML-looking text in the AI output renders as inert plain text. */}
+        <ReactMarkdown>{output}</ReactMarkdown>
+      </div>
     </div>
   );
 }

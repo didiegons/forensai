@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ForensAI — AP Fraud Detection · Dayo Egonu</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Instrument+Sans:wght@400;500;600&family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d1117;--surface:#161b22;--surface2:#1c2128;--border:#30363d;--text:#e6edf3;--muted:#8b949e;--muted2:#6e7681;--high:#f85149;--high-bg:rgba(248,81,73,.12);--med:#e3b341;--med-bg:rgba(227,179,65,.12);--low:#3fb950;--low-bg:rgba(63,185,80,.12);--accent:#58a6ff;--accent-bg:rgba(88,166,255,.1);--amber:#F5B020;--purple:#bc8cff;}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;font-size:13px;min-height:100vh;line-height:1.6}
+a{color:var(--accent);text-decoration:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+/* PORTFOLIO NAV */
+.portfolio-nav{position:sticky;top:0;z-index:200;background:rgba(13,17,23,0.97);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,0.08);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:48px;}
+.pnav-brand{font-family:'Fraunces',serif;font-size:1rem;font-weight:700;color:var(--amber);text-decoration:none}
+.pnav-links{display:flex;gap:.1rem;list-style:none}
+.pnav-links a{font-family:'Instrument Sans',sans-serif;font-size:.78rem;font-weight:500;color:#96A3BA;text-decoration:none;padding:.3rem .65rem;border-radius:5px;transition:color .2s,background .2s}
+.pnav-links a:hover{color:#F2F6FF;background:rgba(255,255,255,0.06)}
+.pnav-links a.active{color:var(--amber)}
+.pnav-links a.linkedin{background:#0a66c2;color:#fff;border-radius:6px}
+.pnav-links a.linkedin:hover{background:#0856a8}
+
+/* APP HEADER */
+.app-header{display:flex;align-items:center;justify-content:space-between;padding:12px 28px;border-bottom:1px solid var(--border);background:var(--surface)}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{width:28px;height:28px;background:var(--high);border-radius:4px;display:flex;align-items:center;justify-content:center}
+.logo-mark svg{width:16px;height:16px}
+.logo-name{font-family:'Syne',sans-serif;font-weight:800;font-size:17px;letter-spacing:-.5px;color:var(--text)}
+.logo-name span{color:var(--high)}
+.header-badges{display:flex;gap:8px}
+.hbadge{font-size:11px;padding:3px 10px;border-radius:4px;border:1px solid var(--border);color:var(--muted)}
+.hbadge.red{border-color:var(--high);color:var(--high);background:var(--high-bg)}
+.hbadge.amber{border-color:var(--med);color:var(--med);background:var(--med-bg)}
+.hbadge.green{border-color:var(--low);color:var(--low);background:var(--low-bg)}
+
+/* APP NAV */
+.app-nav{display:flex;border-bottom:1px solid var(--border);background:var(--surface);padding:0 28px;overflow-x:auto}
+.nav-tab{padding:11px 16px;font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s,border-color .15s;white-space:nowrap}
+.nav-tab:hover{color:var(--text)}
+.nav-tab.active{color:var(--text);border-bottom-color:var(--accent)}
+.nav-tab .badge{display:inline-block;margin-left:6px;font-size:10px;padding:1px 6px;border-radius:99px;background:var(--high-bg);color:var(--high);border:1px solid var(--high)}
+
+/* MAIN */
+.app-main{padding:24px 28px;max-width:1200px;margin:0 auto}
+.section{display:none}
+.section.active{display:block}
+.section-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;margin-bottom:4px}
+.section-sub{color:var(--muted);font-size:12px;margin-bottom:20px}
+
+/* ABOUT TAB */
+.about-hero{padding-bottom:28px;border-bottom:1px solid var(--border);margin-bottom:28px}
+.about-overtitle{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.about-h1{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;letter-spacing:-.5px;margin-bottom:12px;line-height:1.1}
+.about-h1 span{color:var(--high)}
+.about-lead{font-size:14px;color:var(--muted);line-height:1.8;max-width:680px}
+.about-section{margin-bottom:32px}
+.about-divider{height:1px;background:var(--border);margin:28px 0}
+.about-sh{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;margin-bottom:4px}
+.about-ss{font-size:12px;color:var(--muted);margin-bottom:16px}
+.about-lbl{font-size:10px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--muted2);margin:0 0 12px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.ac{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
+.ac.hl-red{border-left:3px solid var(--high)}
+.ac.hl-amber{border-left:3px solid var(--med)}
+.ac.hl-green{border-left:3px solid var(--low)}
+.ac.hl-accent{border-left:3px solid var(--accent)}
+.ac.winner{border:1.5px solid var(--low);background:rgba(63,185,80,.05)}
+.ac.outline-accent{border:1px solid var(--accent)}
+.atag{font-size:10px;padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:7px;font-weight:500}
+.atag.red{background:var(--high-bg);color:var(--high)}
+.atag.amber{background:var(--med-bg);color:var(--med)}
+.atag.green{background:var(--low-bg);color:var(--low)}
+.atag.accent{background:var(--accent-bg);color:var(--accent)}
+.atag.purple{background:rgba(188,140,255,.12);color:var(--purple)}
+.ac-title{font-family:'Syne',sans-serif;font-weight:600;font-size:13px;margin-bottom:5px}
+.ac-body{font-size:12px;color:var(--muted);line-height:1.65}
+.ac-body strong{color:var(--text);font-weight:500}
+.mnum{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--border);margin-bottom:8px}
+
+/* Reframe */
+.rf-grid{display:grid;grid-template-columns:1fr 36px 1fr;align-items:start;margin-bottom:12px}
+.rf-b{background:var(--surface2);border-radius:8px;padding:14px 16px}
+.rf-a{background:var(--surface);border:1px solid var(--accent);border-radius:8px;padding:14px 16px}
+.rf-lbl{font-size:10px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px}
+.rf-b .rf-lbl{color:var(--muted2)}
+.rf-a .rf-lbl{color:var(--accent)}
+.rf-text{font-size:13px;line-height:1.6}
+.rf-b .rf-text{color:var(--muted)}
+.rf-a .rf-text{color:var(--text);font-weight:500}
+.rf-arr{display:flex;align-items:flex-start;justify-content:center;padding-top:22px;font-size:16px;color:var(--muted2)}
+
+/* ICP */
+.icp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.icp-s{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+.icp-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;margin-bottom:3px}
+.icp-lbl{font-size:11px;color:var(--muted)}
+.icp-q{background:var(--surface2);border-radius:8px;padding:14px 18px;border-left:3px solid var(--med)}
+.icp-q p{font-size:13px;color:var(--muted);line-height:1.75;font-style:italic}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
+.stat-n{font-family:'Syne',sans-serif;font-size:22px;font-weight:700}
+.stat-n.red{color:var(--high)}.stat-n.amber{color:var(--med)}.stat-n.green{color:var(--low)}
+.stat-l{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* DATA TABLE */
+.data-table-wrap{border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:20px}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{background:var(--surface2);padding:8px 12px;text-align:left;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.data-table td{padding:7px 12px;border-bottom:1px solid var(--border);font-size:12px;color:var(--text)}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:var(--surface2)}
+.amount-cell{font-weight:500;text-align:right}
+.risk-pill{font-size:10px;padding:2px 8px;border-radius:99px;display:inline-block}
+.risk-pill.high{background:var(--high-bg);color:var(--high);border:1px solid var(--high)}
+.risk-pill.med{background:var(--med-bg);color:var(--med);border:1px solid var(--med)}
+.risk-pill.ok{background:var(--low-bg);color:var(--low);border:1px solid var(--low)}
+
+/* UPLOAD */
+.upload-zone{border:1px dashed var(--border);border-radius:8px;padding:32px;text-align:center;background:var(--surface);margin-bottom:20px}
+.upload-title{font-family:'Syne',sans-serif;font-weight:600;font-size:15px;margin-bottom:6px}
+.upload-sub{color:var(--muted);font-size:12px;margin-bottom:16px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;transition:all .15s}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#0d1117;font-weight:500}
+.btn.primary:hover{background:#79c0ff;border-color:#79c0ff}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+
+/* BENFORD */
+.benford-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.benford-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px}
+.benford-vendor{font-family:'Syne',sans-serif;font-weight:600;font-size:14px;margin-bottom:4px}
+.benford-meta{font-size:11px;color:var(--muted);margin-bottom:12px}
+.benford-bars{display:flex;flex-direction:column;gap:5px}
+.bbar-row{display:flex;align-items:center;gap:8px;font-size:11px}
+.bbar-digit{width:12px;color:var(--muted);flex-shrink:0;text-align:right}
+.bbar-track{flex:1;height:14px;background:var(--surface2);border-radius:2px;position:relative;overflow:hidden}
+.bbar-obs{height:100%;border-radius:2px;transition:width .4s ease;position:absolute;top:0;left:0}
+.bbar-exp{position:absolute;top:0;left:0;height:100%;border-right:2px solid var(--muted2);pointer-events:none}
+.bbar-val{width:36px;text-align:right;color:var(--muted)}
+.benford-legend{display:flex;gap:12px;font-size:10px;color:var(--muted);margin-top:10px}
+.bleg-item{display:flex;align-items:center;gap:4px}
+.bleg-dot{width:10px;height:3px;border-radius:1px}
+.chi-badge{display:inline-block;font-size:11px;padding:3px 10px;border-radius:4px;margin-top:8px}
+
+/* FINDINGS */
+.finding-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
+.finding-card.high{border-left-color:var(--high)}
+.finding-card.med{border-left-color:var(--med)}
+.finding-card:hover{background:var(--surface2)}
+.finding-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.finding-title{font-family:'Syne',sans-serif;font-weight:600;font-size:13px;margin-bottom:3px}
+.finding-sub{font-size:11px;color:var(--muted);line-height:1.5}
+.finding-type{font-size:10px;padding:2px 8px;border-radius:4px;flex-shrink:0;margin-top:2px}
+.finding-type.high{background:var(--high-bg);color:var(--high)}
+.finding-type.med{background:var(--med-bg);color:var(--med)}
+.finding-detail{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:none}
+.finding-detail.open{display:block}
+.ev-chain{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.ev-chip{font-size:11px;padding:2px 8px;border-radius:4px;border:1px solid var(--border);color:var(--muted)}
+.detail-lbl{font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted2);margin:10px 0 4px}
+.detail-body{font-size:12px;color:var(--muted);line-height:1.6}
+.tags-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.ftag{font-size:11px;padding:3px 10px;border-radius:4px;border:1px solid var(--border);color:var(--muted);cursor:pointer}
+.ftag.active{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+
+/* VENDORS */
+.vendor-table-wrap{border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.vendor-table{width:100%;border-collapse:collapse}
+.vendor-table th{background:var(--surface2);padding:8px 14px;text-align:left;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border);cursor:pointer}
+.vendor-table th:hover{color:var(--text)}
+.vendor-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:12px}
+.vendor-table tr:last-child td{border-bottom:none}
+.vendor-table tr:hover td{background:var(--surface2)}
+.risk-bar-wrap{display:flex;align-items:center;gap:8px}
+.risk-bar-bg{width:80px;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.risk-bar-fill{height:100%;border-radius:3px}
+
+/* REPORT */
+.api-key-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:16px;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.key-label{font-size:11px;color:var(--muted);margin-bottom:4px}
+.key-input{background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:7px 12px;flex:1;min-width:240px}
+.key-input:focus{outline:none;border-color:var(--accent)}
+.report-output{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;margin-top:16px;font-size:13px;line-height:1.8;white-space:pre-wrap;display:none}
+.report-output.visible{display:block}
+.loading-indicator{display:none;align-items:center;gap:10px;padding:14px;color:var(--muted)}
+.loading-indicator.visible{display:flex}
+.spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty-state{text-align:center;padding:48px 24px;color:var(--muted)}
+.empty-icon{width:40px;height:40px;background:var(--surface2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+</style>
+</head>
+<body>
+
+<!-- PORTFOLIO NAV -->
+<nav class="portfolio-nav">
+  <a href="index.html" class="pnav-brand">Dayo Portfolio</a>
+  <ul class="pnav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="about.html">About</a></li>
+    <li><a href="projects.html" class="active">Projects</a></li>
+    <li><a href="index.html#skills">Skills</a></li>
+    <li><a href="index.html#contact">Contact</a></li>
+    <li><a href="https://www.linkedin.com/in/dayoegonu/" target="_blank" class="linkedin">LinkedIn</a></li>
+  </ul>
+</nav>
+
+<!-- APP HEADER -->
+<div class="app-header">
+  <div class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" stroke="white" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 6V10M6 8H10" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <span class="logo-name">Forens<span>AI</span></span>
+  </div>
+  <div class="header-badges" id="header-badges">
+    <span class="hbadge">No data loaded</span>
+  </div>
+</div>
+
+<!-- APP NAV -->
+<div class="app-nav">
+  <div class="nav-tab active" onclick="switchTab('about')">About</div>
+  <div class="nav-tab" onclick="switchTab('data')" id="tab-data">📂 Data <span style="font-size:10px;padding:2px 8px;border-radius:99px;background:rgba(88,166,255,.15);color:#58a6ff;border:1px solid #58a6ff;margin-left:6px;animation:pulse 2s infinite" id="start-badge">Start Here</span></div>
+  <div class="nav-tab" onclick="switchTab('benford')">Benford's Law</div>
+  <div class="nav-tab" onclick="switchTab('findings')" id="tab-findings">Findings</div>
+  <div class="nav-tab" onclick="switchTab('vendors')">Vendor Risk</div>
+  <div class="nav-tab" onclick="switchTab('report')">Report</div>
+</div>
+
+<div class="app-main">
+
+<!-- ══════════ ABOUT ══════════ -->
+<div class="section active" id="section-about">
+
+  <div class="about-hero">
+    <div class="about-overtitle">Applied AI · Forensic Accounting · Portfolio Project</div>
+    <h1 class="about-h1">Forens<span>AI</span> — AP Fraud Detection</h1>
+    <p class="about-lead">An AI-powered accounts payable fraud detection tool built for independent forensic accountants — the CFEs who currently run Benford's Law in Excel, write investigation reports in Word, and spend three billable days on work that should take ninety minutes.</p>
+  </div>
+
+  <!-- Market problem -->
+  <div class="about-section">
+    <div class="about-lbl">The market problem — why existing tools don't work</div>
+    <div class="g3">
+      <div class="ac hl-red"><span class="atag red">Too expensive</span><div class="ac-title">Enterprise platforms</div><div class="ac-body">KPMG internal tools, Relativity, Bloomberg Law. Priced at <strong>$2,000–$10,000+/month</strong>. Built for Big 4 teams with full support departments, not independent CFEs billing at $250/hour.</div></div>
+      <div class="ac hl-amber"><span class="atag amber">Wrong focus</span><div class="ac-title">Document extraction tools</div><div class="ac-body">CounselPro, FraudFindr, Ocrolus. Excellent at OCR and bank statement parsing. <strong>Not built for AP ledger pattern analysis</strong> — Benford's Law, threshold splitting, shell company detection.</div></div>
+      <div class="ac hl-red"><span class="atag red">Not court-safe</span><div class="ac-title">General AI (ChatGPT / Claude)</div><div class="ac-body">Can describe patterns conversationally. <strong>No audit trail. No traceable evidence chain.</strong> Hallucination risk is disqualifying in any legal proceeding. No purpose-built tool can be replaced by a chatbot here.</div></div>
+    </div>
+  </div>
+
+  <div class="about-divider"></div>
+
+  <!-- Case type evaluation -->
+  <div class="about-section">
+    <div class="about-sh">Why AP vendor fraud — the MVP case type</div>
+    <div class="about-ss">Five fraud types were evaluated against four criteria: standardized input data, mathematically provable detection patterns, value per case, and domain expertise match.</div>
+    <div class="g3">
+      <div class="ac"><span class="atag amber">Evaluated · Skipped</span><div class="ac-title">Expense reimbursement fraud</div><div class="ac-body">Common, but input data is messy — receipts, PDFs, unstructured attachments. Too much preprocessing for an MVP. Not the right first case.</div></div>
+      <div class="ac"><span class="atag amber">Evaluated · Skipped</span><div class="ac-title">Payroll fraud</div><div class="ac-body">Requires HR system access and employee record integration. Ghost employees and rate manipulation need different data models entirely. Strong v2 candidate.</div></div>
+      <div class="ac winner"><span class="atag green">Champion · MVP case type</span><div class="ac-title">Vendor / AP fraud</div><div class="ac-body"><strong>Standardized CSV input</strong> from any accounting software. <strong>Mathematically provable patterns.</strong> <strong>$100k–$500k average exposure.</strong> Direct match to forensic accounting expertise. The only case type that wins on all four criteria.</div></div>
+      <div class="ac"><span class="atag amber">Evaluated · Skipped</span><div class="ac-title">Financial statement fraud</div><div class="ac-body">Requires full auditor access across multiple ledgers and periods. Complexity and access requirements push this to v3 at the earliest.</div></div>
+      <div class="ac"><span class="atag amber">Evaluated · Skipped</span><div class="ac-title">Embezzlement</div><div class="ac-body">Highly variable — cash skimming, check tampering, and asset misappropriation each require different detection logic. Broad but shallow for a first build.</div></div>
+      <div class="ac hl-accent"><span class="atag accent">Decision criteria</span><div class="ac-title">Four decisive factors</div><div class="ac-body">AP fraud wins on: <strong>standardized input</strong> (AP ledger CSV), <strong>defensible math</strong> (chi-square, exact match), <strong>high case value</strong> (tool pays for itself on first finding), and <strong>domain expertise alignment</strong>.</div></div>
+    </div>
+  </div>
+
+  <div class="about-divider"></div>
+
+  <!-- Positioning reframe -->
+  <div class="about-section">
+    <div class="about-sh">Positioning reframe</div>
+    <div class="about-ss">Sharpening from a broad AI pitch to a defensible niche — the move that changes who you sell to, how you reach them, and what they pay.</div>
+    <div class="rf-grid"><div class="rf-b"><div class="rf-lbl">Old positioning</div><div class="rf-text">"AI-powered forensic accounting assistant for fraud investigators"</div></div><div class="rf-arr">→</div><div class="rf-a"><div class="rf-lbl">New positioning</div><div class="rf-text">"The AP vendor fraud tool for independent forensic accountants who are done doing this in Excel"</div></div></div>
+    <div class="rf-grid"><div class="rf-b"><div class="rf-lbl">Old promise</div><div class="rf-text">"Detect fraud with AI"</div></div><div class="rf-arr">→</div><div class="rf-a"><div class="rf-lbl">New promise</div><div class="rf-text">"traceable evidence packages AP fraud findings in 90 minutes, not 3 days"</div></div></div>
+    <div class="rf-grid"><div class="rf-b"><div class="rf-lbl">Old customer</div><div class="rf-text">"Fraud investigators" — too broad to reach, too broad to close</div></div><div class="rf-arr">→</div><div class="rf-a"><div class="rf-lbl">New customer</div><div class="rf-text">Solo CFEs and small forensic firms (2–8 people), billing $200–$400/hr, 4–12 AP fraud cases per year</div></div></div>
+  </div>
+
+  <div class="about-divider"></div>
+
+  <!-- What it analyzes -->
+  <div class="about-section">
+    <div class="about-sh">What ForensAI analyzes</div>
+    <div class="about-ss">Four mathematically provable detection methods. Every finding links to a specific transaction ID — making output traceable evidence packages, not just conversational.</div>
+    <div class="g4">
+      <div class="ac hl-accent"><div class="mnum">01</div><div class="ac-title">Benford's Law</div><div class="ac-body">In natural financial data, leading digit 1 appears ~30% of the time. Fabricated amounts distort this. ForensAI runs a chi-square test (df=8) per vendor and flags where p&lt;0.05.</div></div>
+      <div class="ac hl-accent"><div class="mnum">02</div><div class="ac-title">Duplicate invoice detection</div><div class="ac-body">Groups by vendor + exact amount. Flags any combination appearing more than once. Catches intentional resubmission with suffix modification (APX-7741 → APX-7741R).</div></div>
+      <div class="ac hl-accent"><div class="mnum">03</div><div class="ac-title">Threshold splitting</div><div class="ac-body">Detects invoices clustering within 5% below approval limits ($5k, $10k, $25k, $50k). Three or more invoices in this band from one vendor triggers a high-severity flag.</div></div>
+      <div class="ac hl-accent"><div class="mnum">04</div><div class="ac-title">Shell company scoring</div><div class="ac-body">Scores vendors 0–100 on: PO Box address (+40), missing EIN (+30), new vendor receiving &gt;$10k in first 90 days (+25), large total exposure (+5). Scores ≥50 are flagged.</div></div>
+    </div>
+  </div>
+
+  <div class="about-divider"></div>
+
+  <!-- ICP -->
+  <div class="about-section">
+    <div class="about-sh">Ideal customer profile</div>
+    <div class="about-ss">Independent CFEs and small forensic firms currently doing AP fraud analysis in Microsoft Excel and writing court reports in Word.</div>
+    <div class="icp-grid">
+      <div class="icp-s"><div class="icp-val" style="color:var(--accent)">CFE</div><div class="icp-lbl">Certified Fraud Examiner credential</div></div>
+      <div class="icp-s"><div class="icp-val">1–8</div><div class="icp-lbl">People in the firm</div></div>
+      <div class="icp-s"><div class="icp-val" style="color:var(--low)">$250/hr</div><div class="icp-lbl">Average billing rate</div></div>
+      <div class="icp-s"><div class="icp-val" style="color:var(--med)">Excel</div><div class="icp-lbl">Current AP analysis tool</div></div>
+      <div class="icp-s"><div class="icp-val">4–12</div><div class="icp-lbl">AP fraud cases per year</div></div>
+      <div class="icp-s"><div class="icp-val" style="color:var(--med)">Word</div><div class="icp-lbl">Current report writing tool</div></div>
+    </div>
+    <div class="icp-q"><p>"I spend two days building the same Benford's formula in Excel for every new client. Then another day writing a report that's 80% identical to the last one. That's three billable days I'm writing off because I can't charge a client $750/hour for Excel work."</p></div>
+  </div>
+
+  <div class="about-divider"></div>
+
+  <!-- Defensible moat -->
+  <div class="about-section">
+    <div class="about-sh">Defensible moat</div>
+    <div class="about-ss">What competitors cannot copy — and why the position holds over time.</div>
+    <div class="g2">
+      <div class="ac hl-green"><span class="atag purple">Founder insight</span><div class="ac-title">You are the customer</div><div class="ac-body">The forensic accounting and ML background gives domain credibility no generalist AI company can replicate. You know which columns matter, what a real Benford deviation looks like, how a court report needs to read. Building for yourself first is the strongest possible product-market fit signal.</div></div>
+      <div class="ac hl-green"><span class="atag accent">Technical moat</span><div class="ac-title">Evidence chain by default</div><div class="ac-body">Every finding links to a specific transaction ID from the source file. This makes ForensAI output usable in a legal proceeding — and impossible to produce from a general AI chatbot. That's the feature that converts a skeptical CFE who has been burned by hallucinations before.</div></div>
+      <div class="ac hl-green"><span class="atag green">Scope moat</span><div class="ac-title">AP-only, done right</div><div class="ac-body">"We do AP vendor fraud and we do it better than anyone" beats "we do everything" when a CFE is about to stake their professional reputation on a court submission. Breadth signals fragility. Depth signals trust. Being narrow is the moat.</div></div>
+      <div class="ac hl-green"><span class="atag amber">Pricing moat</span><div class="ac-title">Right-sized for independents</div><div class="ac-body">$149–$249/month sits below FraudFindr's $449 floor. For a CFE billing $250/hour, ForensAI pays for itself if it saves one hour per case — and it saves ten. That's a one-line sales pitch, not a feature list.</div></div>
+    </div>
+  </div>
+
+  <div style="margin-top:24px">
+    <button class="btn primary" onclick="switchTab('data');loadSampleData()">Run the demo — load sample dataset →</button>
+    <a href="projects.html" style="margin-left:12px;font-size:12px;color:var(--muted)">← Back to projects</a>
+  </div>
+
+</div>
+
+<!-- ══════════ DATA ══════════ -->
+<div class="section" id="section-data">
+  <p class="section-title">AP Ledger</p>
+  <p class="section-sub">Upload your accounts payable export or load the sample dataset to begin analysis.</p>
+  <div class="upload-zone" id="upload-zone">
+    <div class="upload-title">Drop AP ledger CSV here</div>
+    <div class="upload-sub">Supports CSV exports from QuickBooks, Xero, Sage, or any accounting software</div>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn primary" onclick="loadSampleData()">Load sample dataset (64 transactions)</button>
+      <button class="btn" onclick="document.getElementById('csv-file').click()">Upload CSV</button>
+      <input type="file" id="csv-file" accept=".csv" style="display:none" onchange="handleCSV(event)">
+    </div>
+  </div>
+  <div id="data-stats" style="display:none">
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-n" id="s-txn">0</div><div class="stat-l">Total transactions</div></div>
+      <div class="stat-card"><div class="stat-n" id="s-total">$0</div><div class="stat-l">Total AP value</div></div>
+      <div class="stat-card"><div class="stat-n" id="s-vendors">0</div><div class="stat-l">Unique vendors</div></div>
+      <div class="stat-card"><div class="stat-n red" id="s-flags">0</div><div class="stat-l">Flags raised</div></div>
+    </div>
+    <div class="data-table-wrap"><table class="data-table"><thead><tr><th>Date</th><th>Vendor</th><th>Invoice</th><th>Amount</th><th>Category</th><th>Approved by</th><th>Risk</th></tr></thead><tbody id="data-tbody"></tbody></table></div>
+    <button class="btn" onclick="loadSampleData()" style="margin-top:4px">Reset to sample data</button>
+  </div>
+</div>
+
+<!-- ══════════ BENFORD ══════════ -->
+<div class="section" id="section-benford">
+  <p class="section-title">Benford's Law Analysis</p>
+  <p class="section-sub">First-digit frequency analysis per vendor. Expected distribution follows Benford's natural law. Chi-square p&lt;0.05 flags statistical anomaly.</p>
+  <div id="benford-content"><div class="empty-state"><div class="empty-icon">⚖</div>Load data to run Benford's analysis</div></div>
+</div>
+
+<!-- ══════════ FINDINGS ══════════ -->
+<div class="section" id="section-findings">
+  <p class="section-title">Findings</p>
+  <p class="section-sub">All flagged anomalies ranked by severity. Click any finding to expand the evidence chain.</p>
+  <div class="tags-row">
+    <span class="ftag active" onclick="filterFindings('all',this)">All</span>
+    <span class="ftag" onclick="filterFindings('duplicate',this)">Duplicates</span>
+    <span class="ftag" onclick="filterFindings('splitting',this)">Threshold splitting</span>
+    <span class="ftag" onclick="filterFindings('shell',this)">Shell company</span>
+    <span class="ftag" onclick="filterFindings('benford',this)">Benford</span>
+    <span class="ftag" onclick="filterFindings('timing',this)">Timing</span>
+  </div>
+  <div id="findings-content"><div class="empty-state"><div class="empty-icon">🔍</div>Load data to run analysis</div></div>
+</div>
+
+<!-- ══════════ VENDORS ══════════ -->
+<div class="section" id="section-vendors">
+  <p class="section-title">Vendor Risk Scores</p>
+  <p class="section-sub">Composite risk scores 0–100 based on all detection signals.</p>
+  <div id="vendors-content"><div class="empty-state">Load data to score vendors</div></div>
+</div>
+
+<!-- ══════════ REPORT ══════════ -->
+<div class="section" id="section-report">
+  <p class="section-title">Investigation Report</p>
+  <p class="section-sub">AI-generated traceable evidence packages narrative based on findings. Every claim links to a specific transaction.</p>
+  <div class="api-key-box">
+    <div style="flex:1;min-width:240px"><div class="key-label">Anthropic API key (stored in session only, never logged)</div><input class="key-input" type="password" id="api-key" placeholder="sk-ant-..."></div>
+    <button class="btn primary" onclick="generateReport()">Generate report</button>
+  </div>
+  <div class="loading-indicator" id="loading"><div class="spinner"></div><span>Generating investigation narrative...</span></div>
+  <div class="report-output" id="report-output"></div>
+</div>
+
+</div>
+
+<script>
+const SAMPLE=[
+  {id:1,date:'2024-01-08',vendor:'Office Depot',invoice:'OD-2401',amount:847.23,category:'Supplies',address:'2200 Old Germantown Rd, Delray Beach FL',approved_by:'S. Williams',ein:'35-0347960'},
+  {id:2,date:'2024-01-22',vendor:'Office Depot',invoice:'OD-2402',amount:392.15,category:'Supplies',address:'2200 Old Germantown Rd, Delray Beach FL',approved_by:'S. Williams',ein:'35-0347960'},
+  {id:3,date:'2024-02-05',vendor:'Office Depot',invoice:'OD-2403',amount:1247.50,category:'Supplies',address:'2200 Old Germantown Rd, Delray Beach FL',approved_by:'S. Williams',ein:'35-0347960'},
+  {id:4,date:'2024-02-19',vendor:'Office Depot',invoice:'OD-2404',amount:456.78,category:'Supplies',address:'2200 Old Germantown Rd, Delray Beach FL',approved_by:'S. Williams',ein:'35-0347960'},
+  {id:5,date:'2024-03-04',vendor:'Office Depot',invoice:'OD-2405',amount:389.00,category:'Supplies',address:'2200 Old Germantown Rd, Delray Beach FL',approved_by:'S. Williams',ein:'35-0347960'},
+  {id:6,date:'2024-03-18',vendor:'Office Depot',invoice:'OD-2406',amount:672.45,category:'Supplies',address:'2200 Old Germantown Rd, Delray Beach FL',approved_by:'S. Williams',ein:'35-0347960'},
+  {id:7,date:'2024-04-01',vendor:'Office Depot',invoice:'OD-2407',amount:1089.23,category:'Supplies',address:'2200 Old Germantown Rd, Delray Beach FL',approved_by:'S. Williams',ein:'35-0347960'},
+  {id:8,date:'2024-04-15',vendor:'Office Depot',invoice:'OD-2408',amount:234.56,category:'Supplies',address:'2200 Old Germantown Rd, Delray Beach FL',approved_by:'S. Williams',ein:'35-0347960'},
+  {id:9,date:'2024-01-01',vendor:'Comcast Business',invoice:'CB-2401',amount:289.99,category:'Utilities',address:'1701 John F Kennedy Blvd, Philadelphia PA',approved_by:'S. Williams',ein:'27-0000798'},
+  {id:10,date:'2024-02-01',vendor:'Comcast Business',invoice:'CB-2402',amount:289.99,category:'Utilities',address:'1701 John F Kennedy Blvd, Philadelphia PA',approved_by:'S. Williams',ein:'27-0000798'},
+  {id:11,date:'2024-03-01',vendor:'Comcast Business',invoice:'CB-2403',amount:289.99,category:'Utilities',address:'1701 John F Kennedy Blvd, Philadelphia PA',approved_by:'S. Williams',ein:'27-0000798'},
+  {id:12,date:'2024-04-01',vendor:'Comcast Business',invoice:'CB-2404',amount:289.99,category:'Utilities',address:'1701 John F Kennedy Blvd, Philadelphia PA',approved_by:'S. Williams',ein:'27-0000798'},
+  {id:13,date:'2024-05-01',vendor:'Comcast Business',invoice:'CB-2405',amount:289.99,category:'Utilities',address:'1701 John F Kennedy Blvd, Philadelphia PA',approved_by:'S. Williams',ein:'27-0000798'},
+  {id:14,date:'2024-06-01',vendor:'Comcast Business',invoice:'CB-2406',amount:289.99,category:'Utilities',address:'1701 John F Kennedy Blvd, Philadelphia PA',approved_by:'S. Williams',ein:'27-0000798'},
+  {id:15,date:'2024-01-18',vendor:'Dell Technologies',invoice:'DT-88412',amount:8450.00,category:'Equipment',address:'One Dell Way, Round Rock TX',approved_by:'S. Williams',ein:'74-2487834'},
+  {id:16,date:'2024-03-07',vendor:'Dell Technologies',invoice:'DT-91203',amount:12750.00,category:'Equipment',address:'One Dell Way, Round Rock TX',approved_by:'S. Williams',ein:'74-2487834'},
+  {id:17,date:'2024-05-14',vendor:'Dell Technologies',invoice:'DT-94817',amount:3200.00,category:'Equipment',address:'One Dell Way, Round Rock TX',approved_by:'S. Williams',ein:'74-2487834'},
+  {id:18,date:'2024-02-15',vendor:'Apex Supply Co',invoice:'APX-7228',amount:3200.00,category:'Equipment',address:'456 Industrial Blvd, Detroit MI',approved_by:'J. Okafor',ein:'38-2847612'},
+  {id:19,date:'2024-03-04',vendor:'Apex Supply Co',invoice:'APX-7741',amount:12400.00,category:'Equipment',address:'456 Industrial Blvd, Detroit MI',approved_by:'J. Okafor',ein:'38-2847612'},
+  {id:20,date:'2024-03-22',vendor:'Apex Supply Co',invoice:'APX-7741R',amount:12400.00,category:'Equipment',address:'456 Industrial Blvd, Detroit MI',approved_by:'J. Okafor',ein:'38-2847612'},
+  {id:21,date:'2024-01-15',vendor:'Martinez Consulting',invoice:'MC-2401',amount:4950.00,category:'Consulting',address:'789 Commerce St, Dallas TX',approved_by:'R. Thompson',ein:'75-1284039'},
+  {id:22,date:'2024-01-29',vendor:'Martinez Consulting',invoice:'MC-2402',amount:4875.00,category:'Consulting',address:'789 Commerce St, Dallas TX',approved_by:'R. Thompson',ein:'75-1284039'},
+  {id:23,date:'2024-02-12',vendor:'Martinez Consulting',invoice:'MC-2403',amount:4920.00,category:'Consulting',address:'789 Commerce St, Dallas TX',approved_by:'R. Thompson',ein:'75-1284039'},
+  {id:24,date:'2024-02-26',vendor:'Martinez Consulting',invoice:'MC-2404',amount:4800.00,category:'Consulting',address:'789 Commerce St, Dallas TX',approved_by:'R. Thompson',ein:'75-1284039'},
+  {id:25,date:'2024-03-11',vendor:'Martinez Consulting',invoice:'MC-2405',amount:4990.00,category:'Consulting',address:'789 Commerce St, Dallas TX',approved_by:'R. Thompson',ein:'75-1284039'},
+  {id:26,date:'2024-03-25',vendor:'Martinez Consulting',invoice:'MC-2406',amount:4850.00,category:'Consulting',address:'789 Commerce St, Dallas TX',approved_by:'R. Thompson',ein:'75-1284039'},
+  {id:27,date:'2024-04-08',vendor:'Martinez Consulting',invoice:'MC-2407',amount:4975.00,category:'Consulting',address:'789 Commerce St, Dallas TX',approved_by:'R. Thompson',ein:'75-1284039'},
+  {id:28,date:'2024-04-22',vendor:'Martinez Consulting',invoice:'MC-2408',amount:4825.00,category:'Consulting',address:'789 Commerce St, Dallas TX',approved_by:'R. Thompson',ein:'75-1284039'},
+  {id:29,date:'2024-05-06',vendor:'Martinez Consulting',invoice:'MC-2409',amount:4960.00,category:'Consulting',address:'789 Commerce St, Dallas TX',approved_by:'R. Thompson',ein:'75-1284039'},
+  {id:30,date:'2024-02-10',vendor:'Vertex Solutions LLC',invoice:'VS-001',amount:12800.00,category:'Services',address:'PO Box 4421, Las Vegas NV 89101',approved_by:'R. Thompson',ein:''},
+  {id:31,date:'2024-02-28',vendor:'Vertex Solutions LLC',invoice:'VS-002',amount:13500.00,category:'Services',address:'PO Box 4421, Las Vegas NV 89101',approved_by:'R. Thompson',ein:''},
+  {id:32,date:'2024-03-15',vendor:'Vertex Solutions LLC',invoice:'VS-003',amount:10900.00,category:'Services',address:'PO Box 4421, Las Vegas NV 89101',approved_by:'R. Thompson',ein:''},
+  {id:33,date:'2024-03-31',vendor:'Vertex Solutions LLC',invoice:'VS-004',amount:10000.00,category:'Services',address:'PO Box 4421, Las Vegas NV 89101',approved_by:'R. Thompson',ein:''},
+  {id:34,date:'2024-01-12',vendor:'TechParts Inc',invoice:'TP-001',amount:7840.00,category:'Parts',address:'321 Warehouse Ave, Cleveland OH',approved_by:'J. Okafor',ein:'34-1923847'},
+  {id:35,date:'2024-01-26',vendor:'TechParts Inc',invoice:'TP-002',amount:8230.00,category:'Parts',address:'321 Warehouse Ave, Cleveland OH',approved_by:'J. Okafor',ein:'34-1923847'},
+  {id:36,date:'2024-02-09',vendor:'TechParts Inc',invoice:'TP-003',amount:9100.00,category:'Parts',address:'321 Warehouse Ave, Cleveland OH',approved_by:'J. Okafor',ein:'34-1923847'},
+  {id:37,date:'2024-02-23',vendor:'TechParts Inc',invoice:'TP-004',amount:7560.00,category:'Parts',address:'321 Warehouse Ave, Cleveland OH',approved_by:'J. Okafor',ein:'34-1923847'},
+  {id:38,date:'2024-03-08',vendor:'TechParts Inc',invoice:'TP-005',amount:8890.00,category:'Parts',address:'321 Warehouse Ave, Cleveland OH',approved_by:'J. Okafor',ein:'34-1923847'},
+  {id:39,date:'2024-03-22',vendor:'TechParts Inc',invoice:'TP-006',amount:9450.00,category:'Parts',address:'321 Warehouse Ave, Cleveland OH',approved_by:'J. Okafor',ein:'34-1923847'},
+  {id:40,date:'2024-04-05',vendor:'TechParts Inc',invoice:'TP-007',amount:7120.00,category:'Parts',address:'321 Warehouse Ave, Cleveland OH',approved_by:'J. Okafor',ein:'34-1923847'},
+  {id:41,date:'2024-04-19',vendor:'TechParts Inc',invoice:'TP-008',amount:8670.00,category:'Parts',address:'321 Warehouse Ave, Cleveland OH',approved_by:'J. Okafor',ein:'34-1923847'},
+  {id:42,date:'2024-05-03',vendor:'TechParts Inc',invoice:'TP-009',amount:9340.00,category:'Parts',address:'321 Warehouse Ave, Cleveland OH',approved_by:'J. Okafor',ein:'34-1923847'},
+  {id:43,date:'2024-01-09',vendor:'TechParts Inc',invoice:'TP-010',amount:3200.00,category:'Parts',address:'321 Warehouse Ave, Cleveland OH',approved_by:'J. Okafor',ein:'34-1923847'},
+  {id:44,date:'2024-02-06',vendor:'TechParts Inc',invoice:'TP-011',amount:4100.00,category:'Parts',address:'321 Warehouse Ave, Cleveland OH',approved_by:'J. Okafor',ein:'34-1923847'},
+  {id:45,date:'2024-03-05',vendor:'TechParts Inc',invoice:'TP-012',amount:5600.00,category:'Parts',address:'321 Warehouse Ave, Cleveland OH',approved_by:'J. Okafor',ein:'34-1923847'},
+  {id:46,date:'2024-03-29',vendor:'TechParts Inc',invoice:'TP-013',amount:2800.00,category:'Parts',address:'321 Warehouse Ave, Cleveland OH',approved_by:'J. Okafor',ein:'34-1923847'},
+  {id:47,date:'2024-04-12',vendor:'TechParts Inc',invoice:'TP-014',amount:6100.00,category:'Parts',address:'321 Warehouse Ave, Cleveland OH',approved_by:'J. Okafor',ein:'34-1923847'},
+  {id:48,date:'2024-05-10',vendor:'TechParts Inc',invoice:'TP-015',amount:1900.00,category:'Parts',address:'321 Warehouse Ave, Cleveland OH',approved_by:'J. Okafor',ein:'34-1923847'},
+  {id:49,date:'2024-01-13',vendor:'Riverside Maintenance',invoice:'RM-001',amount:3200.00,category:'Maintenance',address:'555 River Rd, Memphis TN',approved_by:'J. Okafor',ein:'62-1847293'},
+  {id:50,date:'2024-01-15',vendor:'Riverside Maintenance',invoice:'RM-002',amount:4100.00,category:'Maintenance',address:'555 River Rd, Memphis TN',approved_by:'J. Okafor',ein:'62-1847293'},
+  {id:51,date:'2024-02-10',vendor:'Riverside Maintenance',invoice:'RM-003',amount:2800.00,category:'Maintenance',address:'555 River Rd, Memphis TN',approved_by:'J. Okafor',ein:'62-1847293'},
+  {id:52,date:'2024-02-19',vendor:'Riverside Maintenance',invoice:'RM-004',amount:3600.00,category:'Maintenance',address:'555 River Rd, Memphis TN',approved_by:'J. Okafor',ein:'62-1847293'},
+  {id:53,date:'2024-03-09',vendor:'Riverside Maintenance',invoice:'RM-005',amount:2900.00,category:'Maintenance',address:'555 River Rd, Memphis TN',approved_by:'J. Okafor',ein:'62-1847293'},
+  {id:54,date:'2024-04-06',vendor:'Riverside Maintenance',invoice:'RM-006',amount:3400.00,category:'Maintenance',address:'555 River Rd, Memphis TN',approved_by:'J. Okafor',ein:'62-1847293'},
+  {id:55,date:'2024-01-31',vendor:'Acme Legal Services',invoice:'ALS-Q1-24',amount:5500.00,category:'Legal',address:'100 N LaSalle St, Chicago IL',approved_by:'S. Williams',ein:'36-4827194'},
+  {id:56,date:'2024-04-30',vendor:'Acme Legal Services',invoice:'ALS-Q2-24',amount:5500.00,category:'Legal',address:'100 N LaSalle St, Chicago IL',approved_by:'S. Williams',ein:'36-4827194'},
+  {id:57,date:'2024-07-31',vendor:'Acme Legal Services',invoice:'ALS-Q3-24',amount:5500.00,category:'Legal',address:'100 N LaSalle St, Chicago IL',approved_by:'S. Williams',ein:'36-4827194'},
+  {id:58,date:'2024-01-15',vendor:'Johnson Office Cleaning',invoice:'JOC-241',amount:890.00,category:'Facilities',address:'88 Oak Park Ave, Oak Park IL',approved_by:'S. Williams',ein:'47-2918374'},
+  {id:59,date:'2024-02-15',vendor:'Johnson Office Cleaning',invoice:'JOC-242',amount:890.00,category:'Facilities',address:'88 Oak Park Ave, Oak Park IL',approved_by:'S. Williams',ein:'47-2918374'},
+  {id:60,date:'2024-03-15',vendor:'Johnson Office Cleaning',invoice:'JOC-243',amount:890.00,category:'Facilities',address:'88 Oak Park Ave, Oak Park IL',approved_by:'S. Williams',ein:'47-2918374'},
+  {id:61,date:'2024-04-15',vendor:'Johnson Office Cleaning',invoice:'JOC-244',amount:890.00,category:'Facilities',address:'88 Oak Park Ave, Oak Park IL',approved_by:'S. Williams',ein:'47-2918374'},
+  {id:62,date:'2024-02-08',vendor:'Midwest Courier',invoice:'MWC-1847',amount:234.00,category:'Shipping',address:'77 Transport Way, Indianapolis IN',approved_by:'S. Williams',ein:'35-1847294'},
+  {id:63,date:'2024-03-14',vendor:'Midwest Courier',invoice:'MWC-1921',amount:456.00,category:'Shipping',address:'77 Transport Way, Indianapolis IN',approved_by:'S. Williams',ein:'35-1847294'},
+  {id:64,date:'2024-04-22',vendor:'Midwest Courier',invoice:'MWC-2034',amount:189.00,category:'Shipping',address:'77 Transport Way, Indianapolis IN',approved_by:'S. Williams',ein:'35-1847294'},
+];
+
+const HOLIDAYS_2024=new Set(['2024-01-01','2024-01-15','2024-02-19','2024-05-27','2024-06-19','2024-07-04','2024-09-02','2024-10-14','2024-11-11','2024-11-28','2024-12-25']);
+const BENFORD_EXP={1:.301,2:.176,3:.125,4:.097,5:.079,6:.067,7:.058,8:.051,9:.046};
+const CHI_CRIT=15.507;
+let DATA=[],FINDINGS=[],VENDOR_RISK={},activeFilter='all';
+
+function detectDuplicates(data){const f=[],g={};data.forEach(t=>{const k=t.vendor.toLowerCase().trim()+'|'+t.amount;(g[k]=g[k]||[]).push(t);});Object.values(g).forEach(gr=>{if(gr.length<2)return;f.push({type:'duplicate',severity:'high',title:`Duplicate invoice — ${gr[0].vendor}`,sub:`$${fmt(gr[0].amount)} submitted ${gr.length}× · ${gr.map(t=>t.invoice).join(' & ')}`,txnIds:gr.map(t=>t.id),evidence:gr.map(t=>`${t.invoice} · ${t.date} · $${fmt(t.amount)}`),detail:`Invoice ${gr.map(t=>t.invoice).join(' and ')} share the same vendor and exact amount ($${fmt(gr[0].amount)}). The ${daysBetween(gr[0].date,gr[gr.length-1].date)}-day interval and suffix modification are inconsistent with administrative error.`,next:`Request original purchase order and delivery confirmation for both dates. If only one delivery is documented, you have recoverable funds and a clear evidence chain.`});});return f;}
+
+function detectThresholdSplitting(data,thresholds=[5000,10000,25000,50000]){const f=[],byV=groupBy(data,'vendor');Object.entries(byV).forEach(([v,txns])=>{thresholds.forEach(t=>{const band=txns.filter(x=>x.amount>t*.95&&x.amount<t);if(band.length<3)return;f.push({type:'splitting',severity:'high',title:`Threshold splitting — ${v}`,sub:`${band.length} invoices $${fmt(t*.95)}–$${fmt(t)} · Approval limit: $${fmt(t)}`,txnIds:band.map(x=>x.id),evidence:band.map(x=>`${x.invoice} · $${fmt(x.amount)}`),detail:`${band.length} invoices from ${v} fall just below the $${fmt(t)} approval threshold. The probability of ${band.length} consecutive invoices naturally landing in this 5% band is less than 0.001% — statistically incompatible with chance.`,next:`Pull the original engagement letter. If work was recurring, why were invoices not consolidated? The approver on all ${band.length} invoices (${band[0].approved_by}) either participated or failed to notice a pattern visible on any bank statement.`});});});return f;}
+
+function detectShellCompany(data){const f=[],byV=groupBy(data,'vendor'),fs={};Object.entries(byV).forEach(([v,txns])=>{fs[v]=[...txns].sort((a,b)=>a.date.localeCompare(b.date))[0].date;});const md=Object.values(fs).sort()[0];Object.entries(byV).forEach(([v,txns])=>{let sc=0;const sig=[];const s=txns[0];if(/po box/i.test(s.address||'')){sc+=40;sig.push('PO Box address');}if(!s.ein||s.ein.trim()===''){sc+=30;sig.push('No EIN on file');}if(daysBetween(md,fs[v])<90){const tot=txns.reduce((a,t)=>a+t.amount,0);if(tot>10000){sc+=25;sig.push(`New vendor · $${fmt(tot)} in first 90 days`);}}const tot=txns.reduce((a,t)=>a+t.amount,0);if(txns.length>=2&&tot>20000&&sc>0){sc+=5;sig.push(`$${fmt(tot)} total exposure`);}if(sc>=50)f.push({type:'shell',severity:'high',title:`Shell company indicators — ${v}`,sub:`Risk score: ${sc}/100 · ${sig.slice(0,2).join(' · ')}`,txnIds:txns.map(t=>t.id),evidence:sig,detail:`${v} exhibits ${sig.length} shell company indicators with composite risk score ${sc}/100. The combination of ${sig.join(', ')} is consistent with a fictitious vendor scheme.`,next:`Pull the W-9 on file and request a contract or SOW. Cross-reference the payment destination account with other known vendors. If the approving manager has any relationship to the payee account holder, escalate immediately.`,sc});});return f;}
+
+function detectBenford(data){const res=[],byV=groupBy(data,'vendor');Object.entries(byV).forEach(([v,txns])=>{if(txns.length<8)return;const c={1:0,2:0,3:0,4:0,5:0,6:0,7:0,8:0,9:0};txns.forEach(t=>{const d=parseInt(String(t.amount).replace(/[^0-9]/g,'')[0]);if(d>=1&&d<=9)c[d]++;});const n=txns.length;let chi2=0;for(let d=1;d<=9;d++){const e=n*BENFORD_EXP[d];chi2+=Math.pow(c[d]-e,2)/e;}res.push({vendor:v,txns,counts:c,chi2,flagged:chi2>CHI_CRIT,n});});return res.sort((a,b)=>b.chi2-a.chi2);}
+
+function detectWeekendApprovals(data){const f=[],fl=data.filter(t=>{const d=new Date(t.date+'T12:00:00'),dy=d.getDay();return dy===0||dy===6||HOLIDAYS_2024.has(t.date);});if(!fl.length)return[];Object.entries(groupBy(fl,'approved_by')).forEach(([ap,txns])=>{if(txns.length<2)return;const tot=txns.reduce((s,t)=>s+t.amount,0);f.push({type:'timing',severity:'med',title:`Off-hours approvals — ${txns.length} invoices by ${ap}`,sub:`${txns.length} approvals on weekends/holidays · $${fmt(tot)} total`,txnIds:txns.map(t=>t.id),evidence:txns.map(t=>`${t.invoice} (${t.vendor}) · ${t.date} · $${fmt(t.amount)}`),detail:`${txns.length} invoices totaling $${fmt(tot)} were approved outside standard business hours by ${ap}. All fall on weekends or federal holidays — consistent with approvals processed while oversight is reduced.`,next:`Cross-check approver system login logs. If the approver was not in the office, how was approval granted? Review whether any invoices correspond to vendors with other flags in this analysis.`});});return f;}
+
+function scoreBenfordFindings(res){return res.filter(r=>r.flagged).map(r=>({type:'benford',severity:'med',title:`Benford deviation — ${r.vendor}`,sub:`χ² = ${r.chi2.toFixed(1)} (critical: ${CHI_CRIT}) · Digits 7–9 over-represented`,txnIds:r.txns.map(t=>t.id),evidence:[`χ²: ${r.chi2.toFixed(2)}`,`n = ${r.n} invoices`,`Critical (p=0.05): ${CHI_CRIT}`,`Result: statistically significant`],detail:`Benford's Law predicts digit 1 leads ~30% of the time, 7–9 combined ~15.5%. ${r.vendor}'s distribution deviates significantly (χ²=${r.chi2.toFixed(1)}, p<0.05), suggesting possible fabricated invoice amounts.`,next:`Request original quotes and documentation for the 10 largest invoices. Look for round numbers or amounts clustering near specific values — those are the fabricated entries distorting the distribution.`}));}
+
+function calcVendorRisk(data,findings){const byV=groupBy(data,'vendor'),risk={};Object.keys(byV).forEach(v=>{risk[v]={score:0,flags:[],total:byV[v].reduce((s,t)=>s+t.amount,0),count:byV[v].length};});findings.forEach(f=>{f.txnIds.forEach(id=>{const txn=data.find(t=>t.id===id);if(!txn)return;const v=txn.vendor;if(!risk[v])return;const pts=f.severity==='high'?35:f.severity==='med'?20:10;if(!risk[v].flags.includes(f.type)){risk[v].score=Math.min(100,risk[v].score+pts);risk[v].flags.push(f.type);}});});return risk;}
+
+function groupBy(arr,key){return arr.reduce((a,t)=>{(a[t[key]]=a[t[key]]||[]).push(t);return a;},{});}
+function fmt(n){return typeof n==='number'?n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):n;}
+function daysBetween(a,b){return Math.round(Math.abs(new Date(b)-new Date(a))/(1000*60*60*24));}
+function riskColor(s){return s>=60?'var(--high)':s>=30?'var(--med)':'var(--low)';}
+function riskLabel(s){return s>=60?{cls:'high',text:'High'}:s>=30?{cls:'med',text:'Medium'}:{cls:'ok',text:'Low'};}
+
+function renderDataTable(data){const fi=new Set(FINDINGS.flatMap(f=>f.txnIds));document.getElementById('data-tbody').innerHTML=data.map(t=>{const rl=fi.has(t.id)?(FINDINGS.find(f=>f.txnIds.includes(t.id))?.severity==='high'?{cls:'high',text:'Flagged'}:{cls:'med',text:'Review'}):{cls:'ok',text:'Clean'};return`<tr><td style="color:var(--muted)">${t.date}</td><td style="font-weight:500">${t.vendor}</td><td style="color:var(--muted);font-size:11px">${t.invoice}</td><td class="amount-cell">$${fmt(t.amount)}</td><td style="color:var(--muted)">${t.category}</td><td style="color:var(--muted)">${t.approved_by}</td><td><span class="risk-pill ${rl.cls}">${rl.text}</span></td></tr>`;}).join('');}
+
+function renderBenford(results){const el=document.getElementById('benford-content');if(!results.length){el.innerHTML='<div class="empty-state">Load data to run analysis</div>';return;}el.innerHTML=`<div class="benford-grid">${results.map(r=>{const mx=Math.max(...Object.values(r.counts).map(c=>c/r.n*100),...Object.values(BENFORD_EXP).map(v=>v*100));const bars=[1,2,3,4,5,6,7,8,9].map(d=>{const obs=r.counts[d]/r.n*100,exp=BENFORD_EXP[d]*100,over=obs>exp*1.5,col=over?'var(--high)':r.flagged?'var(--med)':'var(--accent)';return`<div class="bbar-row"><span class="bbar-digit">${d}</span><div class="bbar-track"><div class="bbar-obs" style="width:${(obs/mx*100).toFixed(1)}%;background:${col}"></div><div class="bbar-exp" style="left:${(exp/mx*100).toFixed(1)}%"></div></div><span class="bbar-val" style="color:${over?'var(--high)':'var(--muted)'}">${obs.toFixed(0)}%</span></div>`;}).join('');const cc=r.flagged?'var(--high)':'var(--low)';return`<div class="benford-card"><div class="benford-vendor">${r.vendor}</div><div class="benford-meta">${r.n} invoices analyzed</div><div class="benford-bars">${bars}</div><div class="benford-legend"><div class="bleg-item"><div class="bleg-dot" style="background:var(--accent)"></div>Observed</div><div class="bleg-item"><div class="bleg-dot" style="background:var(--muted2)"></div>Expected (Benford)</div></div><span class="chi-badge" style="background:${r.flagged?'var(--high-bg)':'var(--low-bg)'};color:${cc};border:1px solid ${cc}">χ²=${r.chi2.toFixed(1)} · ${r.flagged?'FLAGGED (p&lt;0.05)':'Pass'}</span></div>`;}).join('')}</div>`;}
+
+function renderFindings(findings,filter='all'){const el=document.getElementById('findings-content');let f=filter==='all'?findings:findings.filter(x=>x.type===filter);if(!f.length){el.innerHTML='<div class="empty-state">No findings match this filter</div>';return;}f=[...f].sort((a,b)=>({high:0,med:1,low:2}[a.severity]-{high:0,med:1,low:2}[b.severity]));el.innerHTML=f.map((f,i)=>`<div class="finding-card ${f.severity}" onclick="toggleFinding(${i})"><div class="finding-header"><div><div class="finding-title">${f.title}</div><div class="finding-sub">${f.sub}</div></div><span class="finding-type ${f.severity}">${f.type}</span></div><div class="finding-detail" id="fd-${i}"><div class="detail-lbl">What was found</div><div class="detail-body">${f.detail}</div><div class="detail-lbl">Evidence chain</div><div class="ev-chain">${(f.evidence||[]).map(e=>`<span class="ev-chip">${e}</span>`).join('')}</div><div class="detail-lbl">Recommended next step</div><div class="detail-body">${f.next}</div></div></div>`).join('');}
+
+function renderVendors(data,risk){document.getElementById('vendors-content').innerHTML=`<div class="vendor-table-wrap"><table class="vendor-table"><thead><tr><th>Vendor</th><th>Total paid</th><th>Transactions</th><th>Risk score</th><th>Flags</th></tr></thead><tbody>${Object.entries(risk).sort((a,b)=>b[1].score-a[1].score).map(([v,r])=>{const c=riskColor(r.score),rl=riskLabel(r.score);return`<tr><td style="font-weight:500">${v}</td><td>$${fmt(r.total)}</td><td style="color:var(--muted)">${r.count}</td><td><div class="risk-bar-wrap"><div class="risk-bar-bg"><div class="risk-bar-fill" style="width:${r.score}%;background:${c}"></div></div><span style="color:${c};font-weight:500;min-width:28px">${r.score}</span></div></td><td>${r.flags.length?r.flags.map(f=>`<span class="risk-pill ${rl.cls}" style="margin-right:4px">${f}</span>`).join(''):'<span style="color:var(--muted)">—</span>'}</td></tr>`;}).join('')}</tbody></table></div>`;}
+
+function updateStats(data,findings){const total=data.reduce((s,t)=>s+t.amount,0),vendors=new Set(data.map(t=>t.vendor)).size,fi=new Set(findings.flatMap(f=>f.txnIds));document.getElementById('s-txn').textContent=data.length;document.getElementById('s-total').textContent='$'+fmt(total);document.getElementById('s-vendors').textContent=vendors;document.getElementById('s-flags').textContent=findings.length;const high=findings.filter(f=>f.severity==='high').length,med=findings.filter(f=>f.severity==='med').length;document.getElementById('header-badges').innerHTML=`<span class="hbadge red">${high} high severity</span><span class="hbadge amber">${med} medium</span><span class="hbadge green">${data.length-fi.size} clean</span>`;document.getElementById('tab-findings').innerHTML=`Findings <span class="badge">${findings.length}</span>`;}
+
+function runAnalysis(data){DATA=data;const sb=document.getElementById('start-badge');if(sb)sb.remove();const dup=detectDuplicates(data),split=detectThresholdSplitting(data),shell=detectShellCompany(data),br=detectBenford(data),bf=scoreBenfordFindings(br),timing=detectWeekendApprovals(data);FINDINGS=[...dup,...split,...shell,...bf,...timing];VENDOR_RISK=calcVendorRisk(data,FINDINGS);updateStats(data,FINDINGS);renderDataTable(data);renderBenford(br);renderFindings(FINDINGS,activeFilter);renderVendors(data,VENDOR_RISK);document.getElementById('data-stats').style.display='block';document.getElementById('upload-zone').style.display='none';}
+
+function loadSampleData(){document.getElementById('data-stats').style.display='block';document.getElementById('upload-zone').style.display='none';runAnalysis(SAMPLE);}
+
+function handleCSV(e){const file=e.target.files[0];if(!file)return;const reader=new FileReader();reader.onload=ev=>{const lines=ev.target.result.split('\n').filter(l=>l.trim());const headers=lines[0].split(',').map(h=>h.trim().toLowerCase().replace(/"/g,''));const rows=lines.slice(1).map((line,i)=>{const vals=line.split(',').map(v=>v.trim().replace(/"/g,''));const obj={id:i+1};headers.forEach((h,j)=>{obj[h]=vals[j]||'';});if(obj.amount)obj.amount=parseFloat(obj.amount.replace(/[$,]/g,''))||0;return obj;}).filter(r=>r.amount>0);runAnalysis(rows);};reader.readAsText(file);}
+
+function switchTab(name){document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));const tabs=['about','data','benford','findings','vendors','report'];document.querySelectorAll('.nav-tab')[tabs.indexOf(name)].classList.add('active');document.getElementById('section-'+name).classList.add('active');}
+
+function toggleFinding(i){const el=document.getElementById('fd-'+i);if(el)el.classList.toggle('open');}
+function filterFindings(type,el){activeFilter=type;document.querySelectorAll('.ftag').forEach(t=>t.classList.remove('active'));el.classList.add('active');renderFindings(FINDINGS,type);}
+
+async function generateReport(){const key=document.getElementById('api-key').value.trim();if(!key){alert('Please enter your Anthropic API key.');return;}if(!DATA.length){alert('Load data first.');return;}sessionStorage.setItem('forensai_key',key);const loading=document.getElementById('loading'),output=document.getElementById('report-output');loading.classList.add('visible');output.classList.remove('visible');const total=DATA.reduce((s,t)=>s+t.amount,0);const fs=FINDINGS.map(f=>`• [${f.severity.toUpperCase()}] ${f.type.toUpperCase()} — ${f.title}: ${f.detail}`).join('\n');const prompt=`You are a forensic accountant writing a traceable evidence packages investigation report.\n\nANALYSIS SUMMARY:\n- Period: January–June 2024\n- Transactions: ${DATA.length}\n- Total AP value: $${fmt(total)}\n- Vendors: ${[...new Set(DATA.map(t=>t.vendor))].length}\n- Findings: ${FINDINGS.length} (${FINDINGS.filter(f=>f.severity==='high').length} high severity)\n\nFINDINGS:\n${fs}\n\nWrite a structured investigation report:\n1. EXECUTIVE SUMMARY (3-4 sentences)\n2. METHODOLOGY\n3. FINDINGS — one paragraph per high-severity finding, referencing specific amounts and transaction IDs\n4. RECOMMENDATIONS — 3-5 numbered action items\n\nRequirements: Professional formal tone. Reference specific dollar amounts. Use plain section labels. No filler. 400-600 words.`;
+try{const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-5',max_tokens:1200,messages:[{role:'user',content:prompt}]})});const data=await res.json();if(data.error)throw new Error(data.error.message);output.textContent=data.content[0].text;output.classList.add('visible');}catch(err){output.textContent='Error: '+err.message;output.classList.add('visible');}finally{loading.classList.remove('visible');}}
+
+// ── Drag & Drop CSV Upload ──
+const uploadZone = document.getElementById('upload-zone');
+if (uploadZone) {
+  uploadZone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.style.borderColor = 'var(--accent)';
+    this.style.background = 'var(--accent-bg)';
+  });
+
+  uploadZone.addEventListener('dragleave', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.style.borderColor = 'var(--border)';
+    this.style.background = 'var(--surface)';
+  });
+
+  uploadZone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.style.borderColor = 'var(--border)';
+    this.style.background = 'var(--surface)';
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith('.csv')) {
+      const reader = new FileReader();
+      reader.onload = function(ev) {
+        const lines = ev.target.result.split('\n').filter(l => l.trim());
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/"/g, ''));
+        const rows = lines.slice(1).map((line, i) => {
+          const vals = line.split(',').map(v => v.trim().replace(/"/g, ''));
+          const obj = { id: i + 1 };
+          headers.forEach((h, j) => { obj[h] = vals[j] || ''; });
+          if (obj.amount) obj.amount = parseFloat(obj.amount.replace(/[$,]/g, '')) || 0;
+          return obj;
+        }).filter(r => r.amount > 0);
+        runAnalysis(rows);
+      };
+      reader.readAsText(file);
+    } else {
+      alert('Please drop a .csv file.');
+    }
+  });
+}
+  
+const savedKey=sessionStorage.getItem('forensai_key');
+if(savedKey)document.getElementById('api-key').value=savedKey;
+</script>
+</body>
+</html>

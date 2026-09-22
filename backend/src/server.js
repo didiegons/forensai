@@ -6,6 +6,7 @@ import express from 'express';
 import cors from 'cors';
 import analyzeRouter from './routes/analyze.js';
 import reportRouter from './routes/report.js';
+import reviewRouter from './routes/review.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -21,6 +22,7 @@ app.get('/api/health', (req, res) => {
 
 app.use('/api/analyze', analyzeRouter);
 app.use('/api/report', reportRouter);
+app.use('/review', reviewRouter);
 
 // Serve the built React app (frontend/dist) when it exists — i.e. after
 // `npm run build` has run, as it does in the App Runner build step. Local

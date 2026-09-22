@@ -27,15 +27,46 @@ app.use('/api/report', reportRouter);
 // `npm run dev` in each folder is unaffected: frontend/dist simply doesn't
 // exist yet, so this block is skipped entirely.
 const frontendDistPath = path.join(__dirname, '../../frontend/dist');
+
+// index.html must never be cached: after a new deploy, a browser tab left
+// open on a stale cached index.html would still reference the *previous*
+// build's hashed /assets/ filenames, which no longer exist on the new
+// deployment — that's what produces the blank-page-until-hard-refresh bug.
+// Hashed assets are the opposite: their filename changes on every build
+// (Vite content-hashes them), so once served they can be cached forever.
+const NO_CACHE_HEADER = 'no-cache, no-store, must-revalidate';
+const IMMUTABLE_ASSET_HEADER = 'public, max-age=31536000, immutable';
+
+function sendIndexHtml(res) {
+  res.set('Cache-Control', NO_CACHE_HEADER);
+  res.sendFile(path.join(frontendDistPath, 'index.html'));
+}
+
 if (fs.existsSync(frontendDistPath)) {
-  app.use(express.static(frontendDistPath));
+  app.use(
+    express.static(frontendDistPath, {
+      // Disable automatic "/" -> index.html serving so every request for
+      // index.html goes through sendIndexHtml() below and always gets the
+      // no-cache header — one single code path controls it, never static's
+      // own default headers.
+      index: false,
+      setHeaders: (res, filePath) => {
+        const relative = path.relative(frontendDistPath, filePath).split(path.sep).join('/');
+        if (relative === 'index.html') {
+          res.setHeader('Cache-Control', NO_CACHE_HEADER);
+        } else if (relative.startsWith('assets/')) {
+          res.setHeader('Cache-Control', IMMUTABLE_ASSET_HEADER);
+        }
+      },
+    })
+  );
 
   // SPA fallback: any non-API GET route serves index.html so client-side
   // routing (and plain page refreshes/deep links) resolve correctly. The
   // negative lookahead keeps this from ever shadowing /api/* — unmatched
   // API routes still fall through to the JSON 404 handler below.
   app.get(/^(?!\/api\/).*/, (req, res) => {
-    res.sendFile(path.join(frontendDistPath, 'index.html'));
+    sendIndexHtml(res);
   });
 }
 

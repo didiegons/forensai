@@ -52,6 +52,13 @@ export const FOREN_SAI_FIELDS = [
   { key: 'approved_by', label: 'Approved by', required: false },
   { key: 'address', label: 'Address', required: false },
   { key: 'ein', label: 'EIN', required: false },
+  // Optional relationship fields for the Money Trail Explorer — omitting
+  // any of these from a CSV is fine, the graph simply won't draw the
+  // relationships that field would have supported.
+  { key: 'bank_account', label: 'Bank account', required: false },
+  { key: 'beneficiary', label: 'Beneficiary', required: false },
+  { key: 'email', label: 'Email', required: false },
+  { key: 'phone', label: 'Phone', required: false },
 ];
 
 const FIELD_SYNONYMS = {
@@ -63,6 +70,10 @@ const FIELD_SYNONYMS = {
   approved_by: ['approved_by', 'approved by', 'approver', 'approved'],
   address: ['address', 'vendor address', 'supplier address', 'mailing address'],
   ein: ['ein', 'tax id', 'tax id number', 'employer id', 'employer id number'],
+  bank_account: ['bank account', 'bank_account', 'account number', 'account no', 'routing account'],
+  beneficiary: ['beneficiary', 'beneficiary name', 'payee name', 'beneficial owner'],
+  email: ['email', 'vendor email', 'contact email', 'email address'],
+  phone: ['phone', 'phone number', 'vendor phone', 'contact phone', 'telephone'],
 };
 
 function normalize(s) {

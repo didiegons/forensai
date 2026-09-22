@@ -8,6 +8,7 @@ import {
 } from '../services/fraudDetection.js';
 import { detectBenford, scoreBenfordFindings } from '../services/benford.js';
 import { calcVendorRisk } from '../services/vendorRisk.js';
+import { buildMoneyTrail } from '../services/moneyTrail.js';
 
 const router = Router();
 
@@ -38,6 +39,7 @@ router.post('/', (req, res) => {
   ];
 
   const vendorRisk = calcVendorRisk(transactions, findings);
+  const moneyTrail = buildMoneyTrail(transactions, findings, vendorRisk);
 
   const totalValue = transactions.reduce((sum, t) => sum + t.amount, 0);
   const uniqueVendors = new Set(transactions.map((t) => t.vendor)).size;
@@ -55,6 +57,7 @@ router.post('/', (req, res) => {
     findings,
     benford: benfordResults,
     vendorRisk,
+    moneyTrail,
   });
 });
 

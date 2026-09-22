@@ -6,6 +6,7 @@ import DataTab from './components/DataTab.jsx';
 import BenfordTab from './components/BenfordTab.jsx';
 import FindingsTab from './components/FindingsTab.jsx';
 import NextStepsTab from './components/NextStepsTab.jsx';
+import MoneyTrailTab from './components/MoneyTrailTab.jsx';
 import VendorRiskTab from './components/VendorRiskTab.jsx';
 import ReportTab from './components/ReportTab.jsx';
 import { SAMPLE } from './data/sampleData.js';
@@ -19,6 +20,7 @@ export default function App() {
   const [findings, setFindings] = useState([]);
   const [benford, setBenford] = useState([]);
   const [vendorRisk, setVendorRisk] = useState({});
+  const [moneyTrail, setMoneyTrail] = useState(null);
   const [analyzeError, setAnalyzeError] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
@@ -41,6 +43,7 @@ export default function App() {
       setFindings(result.findings);
       setBenford(result.benford);
       setVendorRisk(result.vendorRisk);
+      setMoneyTrail(result.moneyTrail);
       // A previously generated report describes the old dataset — clear it
       // so nothing stale is shown next to the newly loaded findings.
       setReportOutput('');
@@ -127,6 +130,8 @@ export default function App() {
         {activeTab === 'findings' && <FindingsTab findings={findings} hasData={hasData} />}
 
         {activeTab === 'nextsteps' && <NextStepsTab findings={findings} hasData={hasData} />}
+
+        {activeTab === 'moneytrail' && <MoneyTrailTab moneyTrail={moneyTrail} hasData={hasData} />}
 
         {activeTab === 'vendors' && <VendorRiskTab vendorRisk={vendorRisk} />}
 

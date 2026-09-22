@@ -4,11 +4,12 @@ const TAB_LABELS = {
   benford: "Benford's Law",
   findings: 'Findings',
   nextsteps: 'Next Steps',
+  moneytrail: 'Money Trail',
   vendors: 'Vendor Risk',
   report: 'Report',
 };
 
-const TABS = ['about', 'data', 'benford', 'findings', 'nextsteps', 'vendors', 'report'];
+const TABS = ['about', 'data', 'benford', 'findings', 'nextsteps', 'moneytrail', 'vendors', 'report'];
 
 function focusTab(tab) {
   document.getElementById(`tab-${tab}`)?.focus();

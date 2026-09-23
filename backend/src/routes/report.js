@@ -2,35 +2,31 @@ import { Router } from 'express';
 import { validateReportRequest } from '../utils/validation.js';
 import { generateInvestigationReport } from '../services/anthropicClient.js';
 import { fmt } from '../utils/helpers.js';
+import { buildReportSummary, formatSummaryForPrompt } from '../services/reportSummary.js';
 
 const router = Router();
 
-function buildPrompt(stats, findings) {
-  const findingsSummary = findings
-    .map((f) => `• [${String(f.severity).toUpperCase()}] ${String(f.type).toUpperCase()} — ${f.title}: ${f.detail}`)
-    .join('\n');
-
-  const highSeverityCount = findings.filter((f) => f.severity === 'high').length;
-  const period = stats.periodStart && stats.periodEnd
-    ? `${stats.periodStart} to ${stats.periodEnd}`
-    : 'not specified in source data';
+function buildPrompt(stats, findings, vendorRisk) {
+  const summary = buildReportSummary({ stats, findings, vendorRisk });
+  const { overview } = summary;
+  const { period, findingsSection, vendorSection } = formatSummaryForPrompt(summary);
 
   return `You are a forensic accountant drafting an investigation report based on statistical fraud-risk indicators. This report is a DRAFT for review by a licensed forensic examiner — you must not state that fraud has been proven or confirmed. Describe findings as anomalies or fraud-risk indicators that warrant further investigation.
 
 ANALYSIS SUMMARY:
 - Period: ${period}
-- Transactions: ${stats.totalTransactions}
-- Total AP value: $${fmt(stats.totalValue)}
-- Vendors: ${stats.uniqueVendors}
-- Findings: ${findings.length} (${highSeverityCount} high severity)
+- Transactions: ${overview.totalTransactions}
+- Total AP value: $${fmt(overview.totalValue)}
+- Vendors: ${overview.uniqueVendors}
+- Findings: ${overview.totalFindings} (${overview.highSeverityCount} high severity, ${overview.medSeverityCount} medium, ${overview.lowSeverityCount} low)
 
-FINDINGS:
-${findingsSummary || 'No findings were raised by the automated checks.'}
+FINDINGS BY TYPE (representative examples shown; counts reflect the full dataset):
+${findingsSection}${vendorSection}
 
 Write a structured investigation report:
 1. EXECUTIVE SUMMARY (3-4 sentences)
 2. METHODOLOGY
-3. FINDINGS — one paragraph per high-severity finding, referencing specific amounts and transaction IDs. Use language such as "fraud-risk indicator" and "anomaly" — do not assert that fraud is proven.
+3. FINDINGS — one paragraph per high-severity finding type, referencing the representative examples and total counts provided, with specific amounts and transaction IDs where given. Use language such as "fraud-risk indicator" and "anomaly" — do not assert that fraud is proven.
 4. RECOMMENDATIONS — 3-5 numbered action items, including verification by a qualified forensic examiner before any finding is treated as conclusive.
 
 Requirements: Professional formal tone. Reference specific dollar amounts. Use plain section labels. No filler. 400-600 words.`;
@@ -45,8 +41,8 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: validation.error });
   }
 
-  const { stats, findings } = req.body;
-  const prompt = buildPrompt(stats, findings);
+  const { stats, findings, vendorRisk } = req.body;
+  const prompt = buildPrompt(stats, findings, vendorRisk);
 
   try {
     const result = await generateInvestigationReport(prompt);
@@ -61,7 +57,16 @@ router.post('/', async (req, res) => {
     const labeled = `**DRAFT — AI-GENERATED, REQUIRES PROFESSIONAL REVIEW**\n\n${result.text}`;
     res.json({ report: labeled, generatedAt: new Date().toISOString() });
   } catch (err) {
-    console.error('Report generation failed:', err.message);
+    // Full diagnostic detail server-side only — status/code/upstream error
+    // body/model. Never the API key, Authorization header, prompt, or
+    // stack trace, and never any of this in the client-facing response.
+    console.error('Report generation failed:', {
+      status: err.status,
+      code: err.code,
+      model: err.model,
+      upstreamError: err.upstreamError,
+      message: err.message,
+    });
     if (err.code === 'MISSING_API_KEY') {
       return res.status(500).json({ error: 'AI report generation is not configured on this server.' });
     }

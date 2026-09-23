@@ -26,13 +26,16 @@ export function validateReportRequest(body) {
     return { valid: false, error: 'Request body is required.' };
   }
 
-  const { stats, findings } = body;
+  const { stats, findings, vendorRisk } = body;
 
   if (!stats || typeof stats !== 'object') {
     return { valid: false, error: 'Request body must include a "stats" object.' };
   }
   if (!Array.isArray(findings)) {
     return { valid: false, error: 'Request body must include a "findings" array.' };
+  }
+  if (vendorRisk !== undefined && (typeof vendorRisk !== 'object' || vendorRisk === null || Array.isArray(vendorRisk))) {
+    return { valid: false, error: '"vendorRisk", if provided, must be an object.' };
   }
 
   const requiredStatsFields = ['totalTransactions', 'totalValue', 'uniqueVendors'];

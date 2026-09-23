@@ -5,6 +5,20 @@ const MODEL = 'claude-sonnet-5';
 // normal report never gets cut off mid-sentence.
 const MAX_TOKENS = 2048;
 
+// Anthropic's `content` array can include non-text blocks (e.g. `thinking`)
+// ahead of the actual answer — the text block is not guaranteed to be at
+// index 0. This extracts every `text`-type block, in order, and joins
+// them. `thinking` (or any other) block content is never read, returned,
+// or logged.
+function extractResponseText(data) {
+  if (!Array.isArray(data?.content)) return '';
+  return data.content
+    .filter((block) => block?.type === 'text' && typeof block.text === 'string')
+    .map((block) => block.text)
+    .join('')
+    .trim();
+}
+
 /**
  * The only function in this codebase allowed to talk to Anthropic.
  * The API key never leaves the server — it is read from process.env
@@ -39,12 +53,20 @@ export async function generateInvestigationReport(prompt) {
   });
 
   const data = await response.json().catch(() => null);
+  const text = extractResponseText(data);
 
-  if (!response.ok || !data || data.error || !data.content?.[0]?.text) {
+  if (!response.ok || !data || data.error || !text) {
+    // Diagnostic detail for server-side logging only — the route handler
+    // logs these fields and then returns a generic message to the client.
+    // Never includes the API key, Authorization header, prompt, or any
+    // block content (including `thinking` blocks).
     const err = new Error('Anthropic API request failed.');
     err.code = 'UPSTREAM_ERROR';
+    err.status = response.status;
+    err.model = MODEL;
+    err.upstreamError = data?.error ? { type: data.error.type, message: data.error.message } : null;
     throw err;
   }
 
-  return { text: data.content[0].text, truncated: data.stop_reason === 'max_tokens' };
+  return { text, truncated: data.stop_reason === 'max_tokens' };
 }

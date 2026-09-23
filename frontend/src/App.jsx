@@ -95,7 +95,7 @@ export default function App() {
     setIsGeneratingReport(true);
     setReportError('');
     try {
-      const result = await generateReport({ stats, findings });
+      const result = await generateReport({ stats, findings, vendorRisk });
       setReportOutput(result.report);
     } catch (err) {
       setReportError(err.message || 'Failed to generate report.');

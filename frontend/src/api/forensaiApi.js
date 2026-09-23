@@ -22,6 +22,6 @@ export function analyzeTransactions(transactions) {
   return postJSON('/analyze', { transactions });
 }
 
-export function generateReport({ stats, findings }) {
-  return postJSON('/report', { stats, findings });
+export function generateReport({ stats, findings, vendorRisk }) {
+  return postJSON('/report', { stats, findings, vendorRisk });
 }

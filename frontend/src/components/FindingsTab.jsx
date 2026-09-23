@@ -12,6 +12,20 @@ const FILTERS = [
 
 const SEVERITY_ORDER = { high: 0, med: 1, low: 2 };
 
+// Renders the deterministic contextual-review layer's factual signals —
+// never a judgment, just what the classification was computed from.
+function formatBasis(basis) {
+  const intervalText = basis.intervalsDays.length
+    ? `interval pattern: ${basis.intervalsDays.join(', ')} day${basis.intervalsDays.length === 1 ? '' : 's'} apart`
+    : 'interval pattern: not enough parseable dates to determine';
+  return [
+    `${basis.transactionCount} transaction${basis.transactionCount === 1 ? '' : 's'}`,
+    `invoice references: ${basis.invoiceReferences}`,
+    intervalText,
+    `closest cadence: ${basis.detectedCadence || 'none detected'}`,
+  ].join(' · ');
+}
+
 export default function FindingsTab({ findings, hasData }) {
   const [activeFilter, setActiveFilter] = useState('all');
   const [openKey, setOpenKey] = useState(null);
@@ -97,6 +111,35 @@ export default function FindingsTab({ findings, hasData }) {
                     <span className="ev-chip" key={j}>{e}</span>
                   ))}
                 </div>
+
+                {f.context && (
+                  <div className="context-check">
+                    <div className="detail-lbl">
+                      {f.context.label}
+                      {f.context.classification ? `: ${f.context.classification}` : ''}
+                    </div>
+                    <div className="detail-body">{f.context.explanation}</div>
+
+                    {f.context.whatToVerify?.length > 0 && (
+                      <>
+                        <div className="detail-lbl">What to verify next</div>
+                        <ul className="step-list">
+                          {f.context.whatToVerify.map((v, j) => (
+                            <li key={j}>{v}</li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
+
+                    {f.context.basis && (
+                      <>
+                        <div className="detail-lbl">Basis</div>
+                        <div className="detail-body context-basis">{formatBasis(f.context.basis)}</div>
+                      </>
+                    )}
+                  </div>
+                )}
+
                 <div className="detail-lbl">Recommended next step</div>
                 <div className="detail-body">{f.next}</div>
               </div>

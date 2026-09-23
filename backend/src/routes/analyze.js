@@ -9,6 +9,8 @@ import {
 import { detectBenford, scoreBenfordFindings } from '../services/benford.js';
 import { calcVendorRisk } from '../services/vendorRisk.js';
 import { buildMoneyTrail } from '../services/moneyTrail.js';
+import { parseTransactionDate } from '../utils/dates.js';
+import { buildFindingContext } from '../services/contextReview.js';
 
 const router = Router();
 
@@ -41,9 +43,22 @@ router.post('/', (req, res) => {
   const vendorRisk = calcVendorRisk(transactions, findings);
   const moneyTrail = buildMoneyTrail(transactions, findings, vendorRisk);
 
+  // Contextual-review enrichment — computed only after every detector and
+  // vendorRisk/moneyTrail have already run, so it can never influence
+  // their output. Purely additive: attaches an optional `context` field,
+  // never changes type/severity/txnIds/evidence on any finding.
+  const txnById = new Map(transactions.map((t) => [t.id, t]));
+  findings.forEach((f) => {
+    const context = buildFindingContext(f, txnById);
+    if (context) f.context = context;
+  });
+
   const totalValue = transactions.reduce((sum, t) => sum + t.amount, 0);
   const uniqueVendors = new Set(transactions.map((t) => t.vendor)).size;
-  const sortedDates = transactions.map((t) => t.date).filter(Boolean).sort();
+  const sortedDates = transactions
+    .map((t) => t.date)
+    .filter(Boolean)
+    .sort((a, b) => (parseTransactionDate(a)?.getTime() ?? Infinity) - (parseTransactionDate(b)?.getTime() ?? Infinity));
 
   res.json({
     stats: {

@@ -17,9 +17,11 @@ export function calcVendorRisk(data, findings) {
     };
   });
 
+  const txnById = new Map(data.map((t) => [t.id, t]));
+
   findings.forEach((f) => {
     f.txnIds.forEach((id) => {
-      const txn = data.find((t) => t.id === id);
+      const txn = txnById.get(id);
       if (!txn) return;
       const vendor = txn.vendor;
       if (!risk[vendor]) return;

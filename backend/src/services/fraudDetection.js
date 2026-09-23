@@ -1,4 +1,5 @@
 import { groupBy, fmt, daysBetween, HOLIDAYS_2024 } from '../utils/helpers.js';
+import { parseTransactionDate, toISODateString } from '../utils/dates.js';
 
 /**
  * Ported unchanged from original-forensai.html — same grouping key,
@@ -67,11 +68,15 @@ export function detectShellCompany(data) {
   const byVendor = groupBy(data, 'vendor');
   const firstSeen = {};
 
+  // Unparseable dates sort last so garbage data never becomes a spurious
+  // "first seen" reference date.
+  const dateSortKey = (dateStr) => parseTransactionDate(dateStr)?.getTime() ?? Infinity;
+
   Object.entries(byVendor).forEach(([vendor, txns]) => {
-    firstSeen[vendor] = [...txns].sort((a, b) => a.date.localeCompare(b.date))[0].date;
+    firstSeen[vendor] = [...txns].sort((a, b) => dateSortKey(a.date) - dateSortKey(b.date))[0].date;
   });
 
-  const earliestOverall = Object.values(firstSeen).sort()[0];
+  const earliestOverall = Object.values(firstSeen).sort((a, b) => dateSortKey(a) - dateSortKey(b))[0];
 
   Object.entries(byVendor).forEach(([vendor, txns]) => {
     let score = 0;
@@ -122,9 +127,10 @@ export function detectShellCompany(data) {
  */
 export function detectWeekendApprovals(data) {
   const flagged = data.filter((t) => {
-    const d = new Date(`${t.date}T12:00:00`);
+    const d = parseTransactionDate(t.date);
+    if (!d) return false;
     const day = d.getDay();
-    return day === 0 || day === 6 || HOLIDAYS_2024.has(t.date);
+    return day === 0 || day === 6 || HOLIDAYS_2024.has(toISODateString(d));
   });
 
   if (!flagged.length) return [];

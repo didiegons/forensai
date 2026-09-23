@@ -375,6 +375,22 @@ function MoneyTrailExplorer({ moneyTrail }) {
                   {s.severity}
                 </span>
                 {s.text}
+                {s.context && (
+                  <div className="context-check" style={{ marginTop: '8px' }}>
+                    <div className="detail-lbl">{s.context.label}</div>
+                    <div className="detail-body">{s.context.explanation}</div>
+                    {s.context.whatToVerify?.length > 0 && (
+                      <>
+                        <div className="detail-lbl">What to verify next</div>
+                        <ul className="step-list">
+                          {s.context.whatToVerify.map((v, j) => (
+                            <li key={j}>{v}</li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
+                  </div>
+                )}
               </li>
             ))}
           </ul>

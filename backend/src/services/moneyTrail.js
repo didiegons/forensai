@@ -1,4 +1,5 @@
 import { groupBy, fmt } from '../utils/helpers.js';
+import { APPROVER_CONCENTRATION_CONTEXT } from './contextReview.js';
 
 /**
  * Deterministic, evidence-based relationship graph for the Money Trail
@@ -46,10 +47,11 @@ export function buildMoneyTrail(transactions, findings, vendorRisk) {
 
   // Which (de-duplicated) finding types touch each vendor, for the
   // evidence panel's "known flags" list.
+  const txnById = new Map(transactions.map((t) => [t.id, t]));
   const findingsByVendor = {};
   findings.forEach((f) => {
     f.txnIds.forEach((id) => {
-      const txn = transactions.find((t) => t.id === id);
+      const txn = txnById.get(id);
       if (!txn) return;
       const list = (findingsByVendor[txn.vendor] = findingsByVendor[txn.vendor] || []);
       if (!list.some((existing) => existing.type === f.type)) list.push(f);
@@ -132,6 +134,7 @@ export function buildMoneyTrail(transactions, findings, vendorRisk) {
       summary.push({
         text: `${approver} approved payments to ${vendorsForApprover.length} vendors: ${vendorsForApprover.join(', ')}. A common approver relationship is not evidence of wrongdoing on its own, but may warrant review alongside other indicators.`,
         severity: 'med',
+        context: APPROVER_CONCENTRATION_CONTEXT,
       });
     }
   });

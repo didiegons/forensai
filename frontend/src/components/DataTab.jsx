@@ -12,6 +12,7 @@ export default function DataTab({
   error,
   onLoadSample,
   onCSVLoaded,
+  onLoadNewDataset,
 }) {
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -171,8 +172,8 @@ export default function DataTab({
             </table>
           </div>
 
-          <button className="btn" onClick={onLoadSample} style={{ marginTop: '4px' }} disabled={isAnalyzing}>
-            Reset to sample data
+          <button className="btn primary" onClick={onLoadNewDataset} style={{ marginTop: '4px' }} disabled={isAnalyzing}>
+            Load New Dataset
           </button>
         </div>
       )}

@@ -14,6 +14,7 @@ import { analyzeTransactions, generateReport } from './api/forensaiApi.js';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('about');
+  const [resetKey, setResetKey] = useState(0);
 
   const [transactions, setTransactions] = useState([]);
   const [stats, setStats] = useState(null);
@@ -68,6 +69,27 @@ export default function App() {
     runAnalysis(SAMPLE);
   }
 
+  function handleLoadNewDataset() {
+    if (!window.confirm('This will clear the current analysis and report. Continue?')) return;
+
+    setTransactions([]);
+    setStats(null);
+    setFindings([]);
+    setBenford([]);
+    setVendorRisk({});
+    setMoneyTrail(null);
+    setAnalyzeError('');
+    setIsAnalyzing(false);
+    setReportOutput('');
+    setReportError('');
+    setIsGeneratingReport(false);
+    // Forces DataTab/FindingsTab/NextStepsTab/MoneyTrailTab to remount,
+    // clearing their local state (pending CSV import/review, accordion
+    // open state, filters, selection) without a page refresh.
+    setResetKey((k) => k + 1);
+    setActiveTab('data');
+  }
+
   async function handleGenerateReport() {
     if (!stats) return;
     setIsGeneratingReport(true);
@@ -89,22 +111,6 @@ export default function App() {
 
   return (
     <>
-      <nav className="portfolio-nav">
-        <a href="index.html" className="pnav-brand">Dayo Portfolio</a>
-        <ul className="pnav-links">
-          <li><a href="index.html">Home</a></li>
-          <li><a href="about.html">About</a></li>
-          <li><a href="projects.html" className="active">Projects</a></li>
-          <li><a href="index.html#skills">Skills</a></li>
-          <li><a href="index.html#contact">Contact</a></li>
-          <li>
-            <a href="https://www.linkedin.com/in/dayoegonu/" target="_blank" rel="noreferrer" className="linkedin">
-              LinkedIn
-            </a>
-          </li>
-        </ul>
-      </nav>
-
       <Header hasData={hasData} highCount={highCount} medCount={medCount} cleanCount={cleanCount} />
 
       <TabNav activeTab={activeTab} onChange={setActiveTab} hasData={hasData} findingsCount={findings.length} />
@@ -114,6 +120,7 @@ export default function App() {
 
         {activeTab === 'data' && (
           <DataTab
+            key={resetKey}
             transactions={transactions}
             stats={stats}
             flaggedTxnIds={flaggedTxnIds}
@@ -122,16 +129,17 @@ export default function App() {
             error={analyzeError}
             onLoadSample={handleLoadSample}
             onCSVLoaded={handleCSVLoaded}
+            onLoadNewDataset={handleLoadNewDataset}
           />
         )}
 
         {activeTab === 'benford' && <BenfordTab results={benford} hasData={hasData} />}
 
-        {activeTab === 'findings' && <FindingsTab findings={findings} hasData={hasData} />}
+        {activeTab === 'findings' && <FindingsTab key={resetKey} findings={findings} hasData={hasData} />}
 
-        {activeTab === 'nextsteps' && <NextStepsTab findings={findings} hasData={hasData} />}
+        {activeTab === 'nextsteps' && <NextStepsTab key={resetKey} findings={findings} hasData={hasData} />}
 
-        {activeTab === 'moneytrail' && <MoneyTrailTab moneyTrail={moneyTrail} hasData={hasData} />}
+        {activeTab === 'moneytrail' && <MoneyTrailTab key={resetKey} moneyTrail={moneyTrail} hasData={hasData} />}
 
         {activeTab === 'vendors' && <VendorRiskTab vendorRisk={vendorRisk} />}
 

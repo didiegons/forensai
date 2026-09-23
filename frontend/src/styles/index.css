@@ -4,16 +4,6 @@ body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;font
 a{color:var(--accent);text-decoration:none}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 
-/* PORTFOLIO NAV */
-.portfolio-nav{position:sticky;top:0;z-index:200;background:rgba(13,17,23,0.97);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,0.08);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:48px;}
-.pnav-brand{font-family:'Fraunces',serif;font-size:1rem;font-weight:700;color:var(--amber);text-decoration:none}
-.pnav-links{display:flex;gap:.1rem;list-style:none}
-.pnav-links a{font-family:'Instrument Sans',sans-serif;font-size:.78rem;font-weight:500;color:#96A3BA;text-decoration:none;padding:.3rem .65rem;border-radius:5px;transition:color .2s,background .2s}
-.pnav-links a:hover{color:#F2F6FF;background:rgba(255,255,255,0.06)}
-.pnav-links a.active{color:var(--amber)}
-.pnav-links a.linkedin{background:#0a66c2;color:#fff;border-radius:6px}
-.pnav-links a.linkedin:hover{background:#0856a8}
-
 /* APP HEADER */
 .app-header{display:flex;align-items:center;justify-content:space-between;padding:12px 28px;border-bottom:1px solid var(--border);background:var(--surface)}
 .logo{display:flex;align-items:center;gap:10px}
@@ -176,6 +166,8 @@ a{color:var(--accent);text-decoration:none}
 .detail-body{font-size:12px;color:var(--muted);line-height:1.6}
 .step-list{font-size:12px;color:var(--muted);line-height:1.7;margin:0 0 4px;padding-left:18px}
 .step-list li{margin-bottom:2px}
+.context-check{margin:12px 0;padding:10px 12px;border-left:3px solid var(--accent);background:var(--accent-bg);border-radius:0 6px 6px 0}
+.context-basis{font-size:11px;color:var(--muted2)}
 .tags-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
 .ftag{font-size:11px;padding:3px 10px;border-radius:4px;border:1px solid var(--border);color:var(--muted);cursor:pointer}
 .ftag.active{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}

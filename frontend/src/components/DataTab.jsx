@@ -121,6 +121,12 @@ export default function DataTab({
 
       {hasData && stats && (
         <div id="data-stats">
+          <div className="btn-row" style={{ justifyContent: 'flex-end', marginBottom: '12px' }}>
+            <button className="btn primary" onClick={onLoadNewDataset} disabled={isAnalyzing}>
+              Load New Dataset
+            </button>
+          </div>
+
           <div className="stats-row">
             <div className="stat-card">
               <div className="stat-n">{stats.totalTransactions}</div>
